@@ -1,0 +1,1 @@
+The majority of this project's contribution was successfully setting up the SQL server and workbench for the group to interact together with the database, as well as filling up the database with data entries. What is provided is the little code that I worked on.

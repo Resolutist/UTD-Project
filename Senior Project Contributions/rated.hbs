@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" crossorigin="anonymous"> 
+    <link rel="stylesheet" href="/style.css">
+    <title>CS 4485 Team 5 Project</title>
+</head>
+<body>
+   <nav>
+    <h1>My Movie Muse</h1>
+    <u1>
+        <li><a href="/home">Home</a></li>
+    
+    </u1>
+   </nav> 
+
+   <div class = "buttons-all">
+            <a class="open-button" onclick="openForm()"><span>Add Movie</span></a>
+            <a href="/genres" class="open-button-2"><span>Genres</span></a>
+            <a href="/rated" class="open-button-3"><span>Rated Movies</span></a>
+            <a href="/social" class="open-button-4"><span>Social Circles</span></a>
+        </div>
+
+<div class="form-popup" id="myForm">
+  <form action="/auth/home" method="POST" class="form-container border-left-0 border-secondary">
+    <h1>Add a Movie</h1>
+    <label for="name"><b>Name of Movie</b></label>
+    <input type="text" class="form-control" id="movieName" name="movieName" required>
+    <label for="review"><b>Review</b></label>
+    <input type="text" class="form-control" id="movieReview" name="movieReview" required>
+    <label for="creator"><b>Name of Creator</b></label>
+    <input type="text" class="form-control" id="creator" name="creator" required>
+    <input type="hidden" name="UserID" id="UserID" value="{{user.[0].UserID}}">
+
+
+    <button type="submit" class="btn">Add</button>
+    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+  </form>
+</div>
+
+           <script>
+               const myForm = document.getElementById("myForm");
+               const movieName = document.getElementById("movieName").value;
+               const movieReview = document.getElementById("movieReview").value;
+               const creator = document.getElementById("creator").value;
+
+               function openForm() {
+                   myForm.style.display = "block";
+               }
+
+               function closeForm() {
+                   myForm.style.display = "none";
+               }
+           </script>
+
+
+
+   <div class="container mt-4">
+       <div class="jumbotron">
+           <h1 class="display-4">Rated Movies</h1>
+
+           {{#each media}}
+           <div class="card">
+               <div class="card-header">
+                   <div class="d-flex justify-content-between align-items-center">
+                       <div class="movie-title-container">{{Title}}</div>
+                       <div class="tags-container d-flex align-items-center">
+                       </div>
+                       <div class="d-flex align-items-center">
+                           <div class="add-tag-popup d-none">
+                               <label for="new-tag-input-{{@index}}">Enter a new tag:</label>
+                               <input type="text" id="new-tag-input-{{@index}}">
+                               <button type="button" class="btn btn-primary btn-sm create-tag-btn" data-media-index="{{@index}}">Create</button>
+                           </div>
+                           <div class="p-1">
+                               <a href="#" class="btn btn-outline-secondary btn-sm add-a-tag-btn" data-media-index="{{@index}}">Add a tag</a>
+                           </div>
+                           <div class="delete-tag-popup d-none">
+                               <label for="delete-tag-input-{{@index}}">Delete a tag:</label>
+                               <<input type="text" id="old-tag-input-{{@index}}">
+                               <button type="button" class="btn btn-primary btn-sm delete-tag-btn" data-media-index="{{@index}}">Delete</button>
+                           </div>
+                           <div class="p-1">
+                               <a href="#" class="btn btn-outline-secondary btn-sm delete-a-tag-btn" data-media-index="{{@index}}">Delete a tag</a>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+               <div class="card-body">
+                   <p class="card-text">{{Description}}</p>
+                   <p class="card-text">Creator: {{Creator}}</p>
+                   <div class="text-center text-md-end">
+                       <div class="d-md-none">
+                       </div>
+                   </div>
+               </div>
+           </div>
+           {{/each}}
+
+
+       <script>
+           /* Select all the "Add a tag" buttons, "Add tag" popups, "Create tag" buttons,
+           tags containers and media container */
+           const addTagBtns = document.querySelectorAll('.add-a-tag-btn');
+           const addTagPopups = document.querySelectorAll('.add-tag-popup');
+           const deleteTagBtns = document.querySelectorAll('.delete-a-tag-btn');
+           const deleteTagPopups = document.querySelectorAll('.delete-tag-popup');
+           const createTagBtns = document.querySelectorAll('.create-tag-btn');
+           const elimTagBtns = document.querySelectorAll('.delete-tag-btn');
+           const tagsContainers = document.querySelectorAll('.tags-container');
+           const mediaContainer = document.getElementById('media-container');
+
+           // Helper function to check if a tag already exists
+           function tagExists(tagName, movieIndex) {
+               const existingTags = getTags(movieIndex);
+               for (let i = 0; i < existingTags.length; i++) {
+                   if (existingTags[i].toLowerCase() === tagName.toLowerCase()) {
+                       return true;
+                   }
+               }
+               return false;
+           }
+
+           // Helper function to get the tags for a movie from localStorage
+           function getTags(movieIndex) {
+               const key = `tags-${movieIndex}`;
+               const tagsJson = localStorage.getItem(key);
+               if (tagsJson) {
+                   return JSON.parse(tagsJson);
+               } else {
+                   return [];
+               }
+           }
+
+           // Helper function to set the tags for a movie in localStorage
+           function setTags(movieIndex, tags) {
+               const key = `tags-${movieIndex}`;
+               localStorage.setItem(key, JSON.stringify(tags));
+           }
+
+           // Attach event listeners to all "Add a tag" buttons
+           for (let i = 0; i < addTagBtns.length; i++) {
+               const addTagBtn = addTagBtns[i];
+               const addTagPopup = addTagPopups[i];
+               const deleteTagBtn = deleteTagBtns[i];
+               const deleteTagPopup = deleteTagPopups[i];
+               const createTagBtn = createTagBtns[i];
+               const elimTagBtn = elimTagBtns[i];
+               const tagsContainer = tagsContainers[i];
+
+               // Load the tags for this movie from localStorage and display them
+               const tags = getTags(i);
+               tags.forEach(tag => {
+                   const newTagBtn = document.createElement('a');
+                   newTagBtn.classList.add('btn', 'btn-outline-secondary', 'btn-sm', 'btn-tag', tag.toLowerCase());
+                   newTagBtn.innerText = tag;
+                   tagsContainer.appendChild(newTagBtn);
+               });
+
+               // When "Add a tag" button is clicked, toggle "Add tag" popup visibility
+               addTagBtn.addEventListener('click', () => {
+                   addTagPopup.classList.toggle('d-none');
+               });
+
+               //When "Delete a tag" button is clicked, toggle "Delete tag" popup visibility.
+               deleteTagBtn.addEventListener('click', () => {
+                   deleteTagPopup.classList.toggle('d-none');
+               });
+
+
+               // When "Create tag" button is clicked, create a new tag if it doesn't already exist
+               createTagBtn.addEventListener('click', () => {
+                   const tagInput = addTagPopup.querySelector('input[type="text"]');
+                   const tagName = tagInput.value.trim();
+                   if (tagName.length > 15) {
+                       alert('Tags must be 15 characters or less.');
+                   } 
+                   else if (tagName && !tagExists(tagName, i)) {
+                       const newTagBtn = document.createElement('a');
+                       newTagBtn.classList.add('btn', 'btn-outline-secondary', 'btn-sm', 'btn-tag', tagName.toLowerCase());
+                       newTagBtn.innerText = tagName;
+                       tagsContainer.appendChild(newTagBtn);
+                       const tags = getTags(i);
+                       tags.push(tagName);
+                       setTags(i, tags);
+                       tagInput.value = '';
+                       addTagPopup.classList.add('d-none');
+                   } else {
+                       alert(`The tag "${tagName}" already exists for this movie.`);
+                   }
+               });
+               // When "Delete tag" button is clicked, remove the tag from the tags container and from localStorage
+               elimTagBtn.addEventListener('click', () => {
+                   const tagInput = deleteTagPopup.querySelector('input[type="text"]');
+                   const tagName = tagInput.value.trim();
+                   if (tagName.length > 15) {
+                       alert('Tags must be 15 characters or less.');
+                   } 
+                   else if (tagName && tagExists(tagName, i)) {
+                       const tagBtn = tagsContainer.querySelector(`.btn-tag.${tagName.toLowerCase()}`);
+                       tagsContainer.removeChild(tagBtn);
+                       const tags = getTags(i);
+                       const tagIndex = tags.findIndex(tag => tag.toLowerCase() === tagName.toLowerCase());
+                       tags.splice(tagIndex, 1);
+                       setTags(i, tags);
+                       tagInput.value = '';
+                       deleteTagPopup.classList.add('d-none');
+                   } else {
+                       alert(`The tag "${tagName}" already exists for this movie.`);
+                   }
+               });
+
+               // Remove the "is-invalid" class from the tag input when it is clicked
+               addTagPopup.querySelector('input[type="text"]').addEventListener('click', (event) => {
+                   event.target.classList.remove('is-invalid');
+               });
+               deleteTagPopup.querySelector('input[type="text"]').addEventListener('click', (event) => {
+                   event.target.classList.remove('is-invalid');
+               });
+           }
+       </script>
+
+       </div>
+   </div>
+   <script>
+        const movieName = localStorage.getItem('movie-name');
+        const movieReview = localStorage.getItem('movie-review');
+
+        document.getElementById('movie-name').textContent = movieName;
+        document.getElementById('movie-review').textContent = movieReview;
+   </script>
+
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
